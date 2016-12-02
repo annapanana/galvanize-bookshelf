@@ -9,6 +9,7 @@ const router = express.Router();
 const knex = require('../knex');
 const boom = require('boom');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const saltRounds = 10;
 const {camelizeKeys, decamelizeKeys} = require('humps');
 var authenticationStatus = false;
@@ -20,32 +21,39 @@ router.get('/token', (req, res, next) => {
 // verify token
 
 router.post('/token', (req, res, next) => {
-  console.log(req.headers.authorization);
-  if (!req.body.password || !req.body.username) {
-    return res.sendStatus(400);
-  }
+
+  // if (!req.body.password || !req.body.email) {
+  //   return res.sendStatus(400);
+  // }
+
   const { email, password } = req.body;
   knex('users')
-  .where({username:req.body.username})
+  .where({email:req.body.email})
   .first()
   .then(function(result) {
-    if (!result || !bcrypt.compareSync(req.body.password, result.hashed_password)) {
-      // res.sendStatus(401);
-    } else {
-      var thisUser = result;
-      delete thisUser.hashed_password;
-      authenticationStatus = true;
-      res.send(thisUser);
 
-      // res.cookie(thisUser);
-      // res.end();
+    if (!result || !bcrypt.compareSync(req.body.password, result.hashed_password)) {
+      return next(boom.create(400, "Bad email or password"));
+    } else {
+      req.session.userId = result.id;
+      authenticationStatus = true;
+      var validUser = {
+        id: result.id, /// the the id from users
+        email: result.email
+      };
+      res.send(validUser);
+      // jwt.sign(validUser, process.env.JWT_SECRET);
+      // jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, decoded) => {
+      //   res.send(validUser);
+      // });
     }
   });
 });
 
 router.delete('/token', (req, res, next) => {
-  res.cookie(true);
-  res.end();
+  res.send(true);
+  // res.cookie(true);
+  // res.end();
 })
 // router.get('/favorites', (req, res, next) => {
 //   knex('favorites')

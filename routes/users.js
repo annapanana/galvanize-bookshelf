@@ -11,6 +11,7 @@ const boom = require('boom');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const { camelizeKeys } = require('humps');
+const jwt = require('jsonwebtoken');
 
 // create a token
 // a token is specific to the user
@@ -43,6 +44,8 @@ router.post('/users', (req, res, next) => {
               .then((users) => {
                 var userData = camelizeKeys(users[0]);
                 delete userData.hashedPassword;
+                let token = jwt.sign({ id: userData.id, email: userData.email }, process.env.JWT_SECRET);
+                res.cookie('token', token, {httpOnly: true});
                 res.send(userData);
               });
         });
@@ -55,7 +58,6 @@ router.post('/users', (req, res, next) => {
 function checkForValidEmail(email, next) {
   knex('users')
     .then((users) => {
-      console.log(users);
       for (var i = 0; i < users.length; i++) {
         if (users[i].email === email) {
           return next(boom.create(400, 'Email already exists'));
@@ -65,7 +67,7 @@ function checkForValidEmail(email, next) {
 }
 
 function createToken() {
-  
+
 }
 
 module.exports = router;

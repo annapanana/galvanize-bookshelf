@@ -12,6 +12,7 @@ app.disable('x-powered-by');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser')
 const morgan = require('morgan');
+const cookieSession = require('cookie-session');
 
 switch (app.get('env')) {
   case 'development':
@@ -30,15 +31,20 @@ app.use(cookieParser());
 
 const path = require('path');
 
+app.use(cookieSession({
+  name: 'token',
+  keys: ['supersecretkey'],
+}));
+
 app.use(express.static(path.join('public')));
 
 // CSRF protection
-app.use((req, res, next) => {
-  if (/json/.test(req.get('Accept'))) {
-    return next();
-  }
-  res.sendStatus(406);
-});
+// app.use((req, res, next) => {
+//   if (/json/.test(req.get('Accept'))) {
+//     return next();
+//   }
+//   res.sendStatus(406);
+// });
 
 const books = require('./routes/books');
 const favorites = require('./routes/favorites');
