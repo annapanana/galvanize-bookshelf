@@ -37,6 +37,8 @@ suite('part4 routes token', () => {
   });
 
   test('POST /token', (done) => {
+    // const cookieRegEx =x /token=[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+; path=\/;.+httponly/;
+
     request(server)
       .post('/token')
       .set('Accept', 'application/json')
@@ -46,6 +48,7 @@ suite('part4 routes token', () => {
         password: 'youreawizard'
       })
       .expect('set-cookie', /token=[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+; Path=\/;.+HttpOnly/)
+      // .expect('set-cookie', cookieRegEx)
       .expect('Content-Type', /json/)
       .expect((res) => {
         delete res.body.createdAt;

@@ -18,8 +18,6 @@ router.get('/token', (req, res, next) => {
     res.send(authenticationStatus);
 });
 
-// verify token
-
 router.post('/token', (req, res, next) => {
 
   // if (!req.body.password || !req.body.email) {
@@ -35,26 +33,38 @@ router.post('/token', (req, res, next) => {
     if (!result || !bcrypt.compareSync(req.body.password, result.hashed_password)) {
       return next(boom.create(400, "Bad email or password"));
     } else {
-      req.session.userId = result.id;
+
       authenticationStatus = true;
       var validUser = {
         id: result.id, /// the the id from users
+        firstName: result.first_name,
+        lastName: result.last_name,
         email: result.email
       };
-      res.send(validUser);
-      // jwt.sign(validUser, process.env.JWT_SECRET);
-      // jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, decoded) => {
-      //   res.send(validUser);
-      // });
+      let token = jwt.sign(validUser, process.env.JWT_SECRET);
+      // 3 hours from now
+      let expirationTime = new Date(Date.now() + 1000 * 60 * 60 * 3);
+      res.cookie('token', token, {
+        httpOnly: true,
+        expires: expirationTime,
+        secure: router.get('env') === 'production'
+      });
+
+      jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, decoded) => {
+        res.send(validUser);
+      });
     }
+  })
+  .catch((err) => {
+    next(err);
   });
 });
 
-router.delete('/token', (req, res, next) => {
+router.delete('/token', (req, res) => {
+  res.clearCookie('token');
   res.send(true);
-  // res.cookie(true);
-  // res.end();
-})
+});
+
 // router.get('/favorites', (req, res, next) => {
 //   knex('favorites')
 //     .orderBy('id')

@@ -12,6 +12,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const { camelizeKeys } = require('humps');
 const jwt = require('jsonwebtoken');
+const secret = process.env.JWT_SECRET;
 
 // create a token
 // a token is specific to the user
@@ -54,6 +55,14 @@ router.post('/users', (req, res, next) => {
     return next(boom.create(400, 'Password must be at least 8 characters long'));
   }
 });
+
+// funciton generateToken(req) {
+//   var token = jwt.sign({
+//     auth: 'email',
+//     exp: Math.floor(new Date().getTime()/1000) + 7*24*60*60
+//   }, secret);
+//   return token;
+// }
 
 function checkForValidEmail(email, next) {
   knex('users')

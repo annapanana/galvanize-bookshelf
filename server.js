@@ -31,10 +31,10 @@ app.use(cookieParser());
 
 const path = require('path');
 
-app.use(cookieSession({
-  name: 'token',
-  keys: ['supersecretkey'],
-}));
+// app.use(cookieSession({
+//   name: 'token',
+//   keys: ['supersecretkey'],
+// }));
 
 app.use(express.static(path.join('public')));
 
